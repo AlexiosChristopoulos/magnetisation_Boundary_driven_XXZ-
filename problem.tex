@@ -1,0 +1,55 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\title{Boundary-driven XXZ chain: model and numerical method}
+\date{1 October 2026}
+\begin{document}\maketitle
+\section*{Model}
+For $N\geq2$, take Pauli operators $X_i,Y_i,Z_i$ and
+\begin{equation}
+H=\sum_{i=1}^{N-1}\left[J(X_iX_{i+1}+Y_iY_{i+1})+
+\Delta Z_iZ_{i+1}\right].
+\end{equation}
+The Lindblad equation is $\dot\rho=-i[H,\rho]+\sum_a
+(L_a\rho L_a^\dagger-\{L_a^\dagger L_a,\rho\}/2)$, with
+\begin{align}
+L_{L,+}&=\sqrt{\gamma(1+\mu)}\,\sigma_1^+,&
+L_{L,-}&=\sqrt{\gamma(1-\mu)}\,\sigma_1^-,\\
+L_{R,+}&=\sqrt{\gamma(1-\mu)}\,\sigma_N^+,&
+L_{R,-}&=\sqrt{\gamma(1+\mu)}\,\sigma_N^-.
+\end{align}
+Here $\gamma\geq0$ and $|\mu|\leq1$. The package starts at
+$\rho(0)=I/2^N$.
+\section*{Continuity}
+The Hamiltonian gives $\dot Z_i=j_{i-1}-j_i$ in the bulk, where
+\begin{equation}
+j_i=2J(X_iY_{i+1}-Y_iX_{i+1}).
+\end{equation}
+The left and right dissipative source terms in $\dot{\langle Z\rangle}$
+are respectively $2\gamma(\mu-\langle Z_1\rangle)$ and
+$-2\gamma(\mu+\langle Z_N\rangle)$. At stationarity, every bond
+current equals the left source and the negative right source.
+For $J=\Delta=0$, the edge spins relax from zero magnetization to
+$\pm\mu(1-e^{-2\gamma t})$ and every interior spin remains unpolarized.
+\section*{Matrix product density operator}
+The local Liouville basis is
+$|\uparrow\rangle\langle\uparrow|,
+|\downarrow\rangle\langle\uparrow|,
+|\uparrow\rangle\langle\downarrow|,
+|\downarrow\rangle\langle\downarrow|$.
+Fusing each ket/bra pair yields a four-dimensional MPS site, equivalent
+to an MPO physical pair. The package also exposes an explicit MPO with
+separate physical legs. Each bond generator contains its Hamiltonian
+commutator; the boundary dissipators are assigned to the first or last
+bond. Exponentiating these $16\times16$ generators gives local gates.
+A forward sweep of half-step gates followed by a reverse sweep gives
+second-order Lie--Trotter--Suzuki evolution. SVD truncation is controlled
+by cutoff and maximum bond dimension. Compression does not guarantee
+positivity, so trace, Hermiticity, and small-system eigenvalues are checked.
+The dense reference constructs a full $2^N\times2^N$ Hamiltonian and
+Lindblad superoperator separately.
+\section*{Context}
+Boundary-driven XXZ steady states are studied by T. Prosen,
+\emph{Phys. Rev. Lett.} 107, 137201 (2011),
+\texttt{https://arxiv.org/abs/1106.2978}. The package tests finite-chain
+numerics and does not attempt an exact large-$N$ result.
+\end{document}

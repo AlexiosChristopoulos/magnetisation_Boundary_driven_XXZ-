@@ -1,0 +1,290 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\title{Progress: BoundaryDrivenXXZ.jl}
+\date{1 October 2026}
+\begin{document}\maketitle
+\section*{Scope and provenance}
+The boundary-driven XXZ chain is evolved as a Julia matrix product density
+operator using ITensors.jl and ITensorMPS.jl.
+The package includes dependency metadata, readable source, README, example,
+benchmark, tests, an executed Jupyter notebook, and this note and a model
+note. No connected GitHub package or code was reused. The model was
+motivated by Prosen's boundary-driven XXZ work and implemented independently
+using the documented ITensorMPS gate API. Existing dependencies retain
+their upstream licenses. The unrelated \texttt{boundary\_xxz\_reference}
+directory was not changed.
+\section*{Commands and results}
+Using Julia 1.13.1, ITensors 0.9.14, ITensorMPS 0.3.23, an offline
+writable depot, and one BLAS thread, the test command (shown without
+machine-specific depot and executable paths)
+\begin{verbatim}
+JULIA_PKG_OFFLINE=true OPENBLAS_NUM_THREADS=1 julia --project=. test/runtests.jl
+\end{verbatim}
+passed 33 of 33 tests in four groups. The analogous commands for
+\texttt{example.jl} and \texttt{benchmark.jl} completed. At $t=0.4$,
+$dt=0.02$, the maximum entrywise density differences from independent
+dense Lindblad evolution for $N=2,3,4$ were respectively
+$4.63\times10^{-9}$, $1.97\times10^{-6}$, and $7.52\times10^{-7}$
+in the executed notebook. The sample density matrices had traces within
+$10^{-7}$ of one and positive minimum Hermitian eigenvalues
+$0.176184,0.087559,0.043550$. The model's $J=\Delta=0$ edge
+magnetizations matched $\pm\mu(1-e^{-2\gamma t})$ to $10^{-11}$.
+
+For $N=3$ at $t=0.5$, the Frobenius errors against dense evolution were
+$1.263\times10^{-4}$ at $dt=0.1$, maximum bond dimension 16;
+$7.904\times10^{-6}$ at $dt=0.025$, maximum bond dimension 16; and
+$2.424\times10^{-2}$ at $dt=0.025$, maximum bond dimension 2.
+A finite-difference continuity check passed at tolerance $2\times10^{-3}$.
+At $t=12$, $N=3$, the two currents were $0.382790$ and $0.382643$;
+the left and right source terms were $0.382704$ and $-0.382718$.
+The maximum MPDO versus trace-constrained dense NESS density difference
+was $1.568\times10^{-5}$; the dense NESS residual was below $10^{-12}$.
+
+Four Julia notebook cells were executed sequentially in one Julia process;
+their standard output is saved in \texttt{xxz\_tutorial.ipynb}. The notebook
+also confirmed that \texttt{density\_mpo} returns an
+\texttt{ITensorMPS.MPO}. A warmed local benchmark for $t=1$, $dt=0.05$,
+maximum bond dimension 32 took $0.020$ s for $N=4$ and $0.037$ s
+for $N=6$. These short timings are illustrative and exclude Julia startup.
+No commit, push, publication, or release was performed.
+\section*{Follow-up verification, 1 October 2026}
+Re-instantiated the existing dependencies from the offline Julia cache and
+added a regression test that contracts the two-site explicit MPO and
+compares all density-matrix entries with the fused-index MPDO. The
+contraction difference was zero at the sampled time. The test command
+above then passed 34 of 34 tests in five groups. The example reproduced
+the four-site $t=0.4$ maximum dense-reference error $4.680\times10^{-6}$
+and the three-site late-time NESS maximum error $1.568\times10^{-5}$.
+The warmed benchmark reported $0.021$ s for $N=4$ and $0.038$ s for
+$N=6$, with traces $1.000000009$ and $0.999999983$, respectively.
+The notebook JSON was parsed and all four code cells retain execution
+counts and outputs. No new GitHub source was reused. The generated local
+manifest was removed after testing to keep dependency resolution portable.
+\section*{Verification rerun, 1 October 2026 at 20:12 UTC}
+The first test invocation in this checkout failed at package loading because
+the project dependencies had not yet been instantiated. Running the documented
+offline \texttt{Pkg.instantiate()} command restored cached ITensors 0.9.14
+and ITensorMPS 0.3.23 with Julia 1.13.1. The test command above then passed
+all 34 tests across five groups in 15.9 s. The example reproduced the
+four-site $t=0.4$ maximum dense-reference error $4.680\times10^{-6}$
+and the three-site $t=12$ maximum NESS density error
+$1.568\times10^{-5}$. The warmed local benchmark gave 0.020 s for
+$N=4$ and 0.037 s for $N=6$, with traces 1.000000009 and
+0.999999983. The notebook JSON has four code cells, all with saved
+execution counts and outputs. The generated manifest was removed again.
+No code from connected GitHub was reused in this rerun, and no commit,
+push, publication, or release was performed.
+\section*{Independent-limit checks, 1 October 2026}
+Added five assertions for two physical limits. At zero bias, the maximally
+mixed density matrix remains stationary for a four-site chain with nonzero
+exchange, ZZ interaction, and boundary coupling; both the MPDO density
+and its dense-generator residual passed tolerances of $10^{-11}$ and
+$10^{-10}$. At zero exchange but nonzero ZZ interaction, the edge
+magnetizations follow $\pm\mu(1-e^{-2\gamma t})$, the interior
+magnetizations and currents vanish, and the full four-site MPDO density
+matches independent dense evolution within $10^{-11}$.
+
+The first test attempt again encountered an uninstantiated local Julia
+environment. Offline \texttt{Pkg.instantiate()} restored cached ITensors
+0.9.14 and ITensorMPS 0.3.23; the test command above then passed all
+39 assertions in six groups in 16.0 s. \texttt{example.jl} reproduced
+the four-site $t=0.4$ maximum dense density error $4.680\times10^{-6}$
+and three-site late-time NESS error $1.568\times10^{-5}$.
+\texttt{benchmark.jl} reported warmed timings of 0.019 s for $N=4$
+and 0.037 s for $N=6$ at $t=1$, $dt=0.05$, maximum bond 32. The notebook
+remains valid JSON with four sequentially executed code cells and saved
+outputs. No connected GitHub source was reused; no commit, push,
+publication, or release was performed.
+\section*{Limitations}
+The gate split has finite-step error. Compression can perturb trace,
+Hermiticity, and positivity, so users should refine time step, cutoff,
+and bond dimension. The dense reference is capped at four sites and
+full density materialization at five. The late-time MPO evolution is a
+finite-time approximation to the NESS, not a variational steady-state
+solver. Large-chain convergence and transport scaling were not claimed.
+\section*{Pure-state initial-condition check, 2 October 2026}
+Added four assertions for the public \texttt{initial} argument. A three-site
+$|\uparrow\downarrow\uparrow\rangle$ density operator was assembled in the
+fused local ket/bra basis. Its matrix entry and trace, exact return at zero
+time, and evolution to $t=0.2$ were checked. With $dt=0.01$, cutoff
+$10^{-14}$, and maximum bond 64, the full MPDO density agreed entrywise
+with independent dense Lindblad evolution from that same initial density
+to better than $3\times10^{-6}$.
+
+The test command above passed 43 of 43 assertions in seven groups using
+the cached ITensors 0.9.14 and ITensorMPS 0.3.23 dependencies. The example
+again gave maximum four-site $t=0.4$ dense density error
+$4.680\times10^{-6}$ and three-site late-time NESS error
+$1.568\times10^{-5}$. The warmed benchmark reported 0.018 s for $N=4$
+and 0.036 s for $N=6$ at $t=1$, $dt=0.05$, maximum bond 32. The notebook
+JSON was parsed; all four code cells retain execution counts and outputs.
+No connected GitHub code was reused, and no commit, push, publication, or
+release was performed. The unrelated reference directory was not changed.
+\section*{Closed-chain unitary check, 2 October 2026}
+Added five assertions for the zero-bath limit $\gamma=0$, starting from
+$|\uparrow\downarrow\uparrow\rangle\langle\uparrow\downarrow\uparrow|$
+with $J=0.5$, $\Delta=0.3$, and $t=0.35$. With $dt=0.01$, cutoff
+$10^{-14}$, and maximum bond 64, the MPDO density agreed entrywise with
+independent dense Liouvillian evolution within $10^{-5}$. Its trace and
+purity agreed with one within $10^{-10}$ and $10^{-9}$, respectively;
+the minimum Hermitian density eigenvalue exceeded $-10^{-9}$, and the
+coherent current exceeded $0.1$ in magnitude.
+
+The initial test command failed at package loading because dependencies
+were not instantiated in this checkout. Offline \texttt{Pkg.instantiate()}
+restored cached ITensors 0.9.14 and ITensorMPS 0.3.23 under Julia 1.13.1.
+The same test command then passed 48 of 48 assertions in eight groups
+(17.1 s). \texttt{example.jl} reproduced the four-site $t=0.4$ maximum
+dense-reference error $4.680\times10^{-6}$ and three-site late-time NESS
+error $1.568\times10^{-5}$. The warmed benchmark gave 0.012 s for
+$N=4$ and 0.040 s for $N=6$ at $t=1$, $dt=0.05$, maximum bond 32.
+The notebook JSON parsed; all four code cells have saved execution counts
+and outputs. No connected GitHub source was reused, and no commit, push,
+publication, or release was performed. The reference directory was not
+changed. The finite-step, compression, and finite-size limitations above
+remain in force.
+\section*{Completion audit, 2 October 2026 at 00:13 UTC}
+The first test command in this verification failed because this checkout had no instantiated dependencies.
+Offline \texttt{Pkg.instantiate()} restored cached ITensors 0.9.14 and
+ITensorMPS 0.3.23 under Julia 1.13.1. The documented test command then
+passed all 48 assertions in eight groups (17.0 s). No additional tests
+were needed after reviewing their coverage.
+
+The example again gave maximum four-site $t=0.4$ dense density error
+$4.680\times10^{-6}$ and three-site late-time NESS error
+$1.568\times10^{-5}$. The warmed benchmark reported 0.018 s for $N=4$
+and 0.036 s for $N=6$ at $t=1$, $dt=0.05$, maximum bond 32. Notebook
+JSON parsing confirmed all four code cells have saved execution counts
+and outputs. No connected GitHub source was reused; no commit, push,
+publication, or release was performed. The reference directory was not
+changed.
+\section*{Verification rerun, 2 October 2026 at 01:13 UTC}
+The verification used the existing code and tests. Cached dependencies were instantiated
+offline with Julia 1.13.1, ITensors 0.9.14, and ITensorMPS 0.3.23. The
+documented test command passed all 48 assertions in eight groups (17.0 s).
+The example reproduced the four-site $t=0.4$ maximum dense density error
+$4.680\times10^{-6}$ and three-site late-time NESS error
+$1.568\times10^{-5}$. The warmed benchmark reported 0.012 s for $N=4$
+and 0.036 s for $N=6$ at $t=1$, $dt=0.05$, maximum bond 32. The notebook
+JSON parsed with four executed code cells, all with saved outputs. No
+connected GitHub source was reused; no commit, push, publication, or
+release was performed. The unrelated reference directory was not changed.
+\section*{Verification rerun, 2 October 2026 at 02:12 UTC}
+With Julia 1.13.1 and
+offline cached ITensors 0.9.14 and ITensorMPS 0.3.23, ran
+\texttt{Pkg.instantiate()} and the documented test, example, and
+benchmark commands with one BLAS thread. All 48 tests passed in eight
+groups (17.0 s). The example gave a four-site, $t=0.4$ maximum density
+error $4.680\times10^{-6}$ against the independent dense solver and a
+three-site late-time NESS density error $1.568\times10^{-5}$. The warmed
+benchmark reported 0.021 s for $N=4$ and 0.037 s for $N=6$ at $t=1$,
+$dt=0.05$, maximum bond 32, with traces 1.000000009 and 0.999999983.
+The notebook parsed as JSON with four executed code cells and saved
+outputs. The finite-step, compression, and finite-size limitations above
+remain. No connected GitHub source was reused and no GitHub repository
+was modified. The reference directory was untouched.
+\section*{Final numerical audit, 2 October 2026 at 03:13 UTC}
+With Julia 1.13.1,
+cached ITensors 0.9.14 and ITensorMPS 0.3.23, and one BLAS thread, ran
+offline \texttt{Pkg.instantiate()} followed by the documented
+\texttt{test/runtests.jl}, \texttt{example.jl}, and \texttt{benchmark.jl}
+commands. All 48 tests passed in eight groups (17.0 s). The four-site
+$t=0.4$ maximum density error against dense Lindblad evolution was
+$4.680\times10^{-6}$; the three-site late-time maximum NESS density
+error was $1.568\times10^{-5}$. The warmed $N=4$ and $N=6$ benchmarks
+took 0.019 s and 0.035 s at $t=1$, $dt=0.05$, and maximum bond 32.
+The notebook parsed as JSON with four executed code cells and saved outputs.
+No further numerical-check gap was found; the finite-step, compression,
+and finite-size limitations stated above still apply. No connected GitHub
+code was reused, and no GitHub repository was modified. The unrelated
+reference directory was untouched.
+\section*{Completion verification, 2 October 2026 at 04:12 UTC}
+Review of the package found no missing deliverable or numerical check.
+The first test command could not load uninstantiated ITensors;
+offline \texttt{Pkg.instantiate()} restored cached ITensors 0.9.14 and
+ITensorMPS 0.3.23 under Julia 1.13.1. With one BLAS thread, the documented
+\texttt{test/runtests.jl} command passed all 48 tests in eight groups
+(17.1 s). The documented \texttt{example.jl} command reproduced the
+four-site $t=0.4$ maximum dense density error $4.680\times10^{-6}$ and
+three-site late-time maximum NESS density error $1.568\times10^{-5}$.
+The warmed \texttt{benchmark.jl} run took 0.022 s for $N=4$ and 0.036 s
+for $N=6$ at $t=1$, $dt=0.05$, and maximum bond 32. Parsing the notebook
+confirmed four executed code cells with saved outputs. The finite-step,
+compression, and finite-size limitations above still apply. No connected
+GitHub source was reused, no GitHub repository was modified, and
+\texttt{boundary\_xxz\_reference} was untouched.
+\section*{Daily verification, 2 October 2026 at 06:17 UTC}
+Offline
+\texttt{Pkg.instantiate()} restored cached ITensors 0.9.14 and
+ITensorMPS 0.3.23 under Julia 1.13.1. With one BLAS thread, the
+documented \texttt{test/runtests.jl} command passed all 48 assertions
+in eight groups (17.0 s). The example reproduced the four-site
+$t=0.4$ maximum dense density error $4.680\times10^{-6}$ and the
+three-site late-time maximum NESS density error $1.568\times10^{-5}$.
+The warmed benchmark took 0.017 s for $N=4$ and 0.037 s for $N=6$
+at $t=1$, $dt=0.05$, and maximum bond 32. Notebook JSON parsing
+confirmed four executed code cells, each with saved output. No missing
+deliverable or numerical-check gap was found. The temporary manifest
+was removed after verification. No connected GitHub code was reused,
+no GitHub repository was modified, and the reference directory was
+untouched.
+\section*{XXZ verification, 2 October 2026 at 08:16 UTC}
+Offline \texttt{Pkg.instantiate()} used Julia 1.13.1,
+ITensors 0.9.14, ITensorMPS 0.3.23, and one BLAS thread. The documented
+\texttt{test/runtests.jl} command passed all 48 assertions in eight groups.
+The example gave a four-site $t=0.4$ maximum dense density error of
+$4.680\times10^{-6}$ and a three-site late-time maximum NESS density
+error of $1.568\times10^{-5}$. The warmed benchmark reported 0.020 s
+for $N=4$ and 0.038 s for $N=6$ at $t=1$, $dt=0.05$, maximum bond 32;
+traces were 1.000000009 and 0.999999983. The notebook remains valid JSON
+with four executed code cells and saved outputs. No missing requested
+deliverable or small-system check was found. The generated manifest was
+removed after verification. No connected GitHub code was reused, no
+GitHub repository was modified, and \texttt{boundary\_xxz\_reference}
+was untouched.
+\section*{Daily numerical check, 2 October 2026 at 09:12 UTC}
+The existing numerical results were checked with Julia
+1.13.1, offline cached ITensors 0.9.14 and ITensorMPS 0.3.23, and one BLAS
+thread, ran \texttt{Pkg.instantiate()}, \texttt{test/runtests.jl},
+\texttt{example.jl}, and \texttt{benchmark.jl}. All 48 assertions passed
+in eight groups. The example reproduced the four-site $t=0.4$ maximum
+density error $4.680\times10^{-6}$ against the dense Lindblad solver and
+the three-site late-time NESS density error $1.568\times10^{-5}$.
+The warmed benchmark took 0.011 s for $N=4$ and 0.034 s for $N=6$
+at $t=1$, $dt=0.05$, maximum bond 32; traces were 1.000000009 and
+0.999999983. The notebook parsed as JSON with four code cells, execution
+counts 1--4, and saved outputs. The finite-step, compression, and
+finite-size limitations above still apply. No connected GitHub source was
+reused; no repository was published or modified on GitHub. The unrelated
+\texttt{boundary\_xxz\_reference} directory was untouched.
+\section*{Scheduled verification, 2 October 2026 at 10:12 UTC}
+Offline
+\texttt{Pkg.instantiate()} restored cached ITensors 0.9.14 and
+ITensorMPS 0.3.23 under Julia 1.13.1. With one BLAS thread, the
+documented \texttt{test/runtests.jl} command passed all 48 assertions
+in eight groups (17.2 s). The \texttt{example.jl} command reproduced
+the four-site $t=0.4$ maximum density error $4.680\times10^{-6}$
+against dense Lindblad evolution and the three-site late-time NESS
+density error $1.568\times10^{-5}$. The warmed \texttt{benchmark.jl}
+run took 0.021 s for $N=4$ and 0.036 s for $N=6$ at $t=1$, $dt=0.05$,
+maximum bond 32; traces were 1.000000009 and 0.999999983. Notebook
+JSON parsed with four executed code cells and saved outputs. No
+additional numerical-check gap was found. Finite-step, compression,
+and finite-size limitations above remain. No connected GitHub code was
+reused, no GitHub repository was modified, and the unrelated
+\texttt{boundary\_xxz\_reference} directory was untouched.
+\section*{Scheduled verification, 2 October 2026 at 11:13 UTC}
+Offline
+\texttt{Pkg.instantiate()} restored ITensors 0.9.14 and ITensorMPS 0.3.23
+under Julia 1.13.1. With one BLAS thread, the documented
+\texttt{test/runtests.jl} command passed all 48 assertions in eight groups
+(17.2 s). The example reproduced the four-site $t=0.4$ maximum density
+error $4.680\times10^{-6}$ against dense Lindblad evolution and the
+three-site late-time maximum NESS density error $1.568\times10^{-5}$.
+The warmed benchmark took 0.018 s for $N=4$ and 0.035 s for $N=6$
+at $t=1$, $dt=0.05$, maximum bond 32; traces were 1.000000009 and
+0.999999983. The notebook parsed as JSON with four executed code cells
+and saved outputs. No additional check was needed. No connected GitHub
+code was reused, no GitHub repository was modified, and the unrelated
+\texttt{boundary\_xxz\_reference} directory was untouched.
+\end{document}

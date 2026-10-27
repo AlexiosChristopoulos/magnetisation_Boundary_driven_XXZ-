@@ -1,0 +1,20 @@
+name = "BoundaryDrivenXXZ"
+uuid = "ad750ef3-e93e-4f60-93a2-8ca058a0ae50"
+authors = ["Open quantum systems package research"]
+version = "0.1.0"
+
+[deps]
+ITensors = "9136182c-28ba-11e9-034c-db9fb085ebd5"
+ITensorMPS = "0d1a4710-d33b-49a5-8f18-73bdf49b47e2"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
+[compat]
+julia = "1.11"
+ITensors = "0.8, 0.9"
+ITensorMPS = "0.3, 0.4"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
