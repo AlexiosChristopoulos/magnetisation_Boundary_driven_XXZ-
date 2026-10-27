@@ -17,9 +17,9 @@ the full Hamiltonian and jump operators.
 
 The model is
 
-\[
+$$
 H=\sum_{i=1}^{N-1}\left[J(X_iX_{i+1}+Y_iY_{i+1})+\Delta Z_iZ_{i+1}\right],
-\]
+$$
 
 with left pump/loss rates `γ(1+μ)`/`γ(1−μ)` and right pump/loss rates `γ(1−μ)`/`γ(1+μ)`. Here `0 ≤ γ`, `|μ| ≤ 1`, and `N ≥ 2`. Positive current flows toward the right, with `jᵢ=2J(XᵢYᵢ₊₁−YᵢXᵢ₊₁)`. The bulk continuity equation is `d⟨Zᵢ⟩/dt = jᵢ₋₁−jᵢ`; edge source terms are `2γ(μ−⟨Z₁⟩)` and `−2γ(μ+⟨Zₙ⟩)`.
 
