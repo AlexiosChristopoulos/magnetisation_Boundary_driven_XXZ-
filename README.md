@@ -48,11 +48,7 @@ mpo = density_mpo(model, state)     # separate physical ket/bra legs
 
 The initial state is the maximally mixed density matrix. `evolve` also accepts a compatible fused-index MPS through `initial`. `observables` reports the trace, normalized magnetizations and currents, and edge source terms. `dense_steady_state` provides a trace-constrained dense NESS for at most four sites. It is a reference solve, not an MPO steady-state optimizer.
 
-## Checks and scope
 
-The 48 tests compare complete 2–4-site density matrices with the independent dense Lindblad solver, verify evolution from a user-supplied pure density matrix and the explicit MPO physical-leg mapping, and check trace/Hermiticity/positivity at sampled times, current continuity, zero-bias stationarity, the closed-chain unitary limit, zero-exchange edge relaxation with a finite ZZ interaction, time-step and bond-dimension refinement, and a three-site NESS comparison. The [`xxz_tutorial.ipynb`](xxz_tutorial.ipynb) notebook walks through the small-system checks; [`problem.tex`](problem.tex) derives the model and [`progress.tex`](progress.tex) records numerical results.
-
-For a representative `N=4`, `t=0.4`, `dt=0.05` example, the maximum density entry difference is `4.68×10⁻⁶`; at `dt=0.02` it is below `3×10⁻⁶` for `N=2–4`. These comparisons establish agreement for the small chains tested; larger chains need separate convergence checks. Local gate splitting has second-order step error. SVD compression can perturb trace, Hermiticity, and positivity; monitor the trace and refine `dt`, `cutoff`, and `maxdim`. Materializing a full density matrix scales as `4^N`; the dense reference is capped at four sites. Benchmark timings depend on hardware and compilation state.
 
 The implementation follows the documented [ITensorMPS gate API](https://docs.itensor.org/ITensorMPS/stable/MPSandMPO.html) and uses the boundary-driven XXZ setup discussed in [Prosen's 2011 paper](https://arxiv.org/abs/1106.2978). Dependencies retain their upstream licenses.
 
